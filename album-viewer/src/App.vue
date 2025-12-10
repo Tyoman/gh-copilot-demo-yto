@@ -1,8 +1,16 @@
 <template>
   <div class="app">
     <header class="header">
-      <h1>🎵 Album Collection</h1>
-      <p>Discover amazing music albums</p>
+      <div class="header-content">
+        <div class="header-title">
+          <h1>🎵 Album Collection</h1>
+          <p>Discover amazing music albums</p>
+        </div>
+        <div class="header-controls">
+          <LanguageSelector />
+          <CartIcon :item-count="cartCount" @toggle="toggleCart" />
+        </div>
+      </div>
     </header>
 
     <main class="main">
@@ -24,6 +32,14 @@
         />
       </div>
     </main>
+
+    <CartPanel 
+      :is-open="isCartOpen" 
+      :cart-items="cartItems" 
+      :total-price="totalPrice"
+      @close="toggleCart"
+      @remove-item="removeFromCart"
+    />
   </div>
 </template>
 
@@ -31,11 +47,18 @@
 import { ref, onMounted } from 'vue'
 import axios from 'axios'
 import AlbumCard from './components/AlbumCard.vue'
+import CartIcon from './components/CartIcon.vue'
+import CartPanel from './components/CartPanel.vue'
+import LanguageSelector from './components/LanguageSelector.vue'
 import type { Album } from './types/album'
+import { useCart } from './composables/useCart'
 
 const albums = ref<Album[]>([])
 const loading = ref<boolean>(true)
 const error = ref<string | null>(null)
+const isCartOpen = ref<boolean>(false)
+
+const { cartItems, cartCount, totalPrice, removeFromCart } = useCart()
 
 const fetchAlbums = async (): Promise<void> => {
   try {
@@ -49,6 +72,10 @@ const fetchAlbums = async (): Promise<void> => {
   } finally {
     loading.value = false
   }
+}
+
+const toggleCart = (): void => {
+  isCartOpen.value = !isCartOpen.value
 }
 
 onMounted(() => {
@@ -66,6 +93,25 @@ onMounted(() => {
   text-align: center;
   margin-bottom: 3rem;
   color: white;
+}
+
+.header-content {
+  max-width: 1200px;
+  margin: 0 auto;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 2rem;
+}
+
+.header-title {
+  flex: 1;
+}
+
+.header-controls {
+  display: flex;
+  gap: 1rem;
+  align-items: center;
 }
 
 .header h1 {
@@ -145,6 +191,15 @@ onMounted(() => {
 @media (max-width: 768px) {
   .app {
     padding: 1rem;
+  }
+  
+  .header-content {
+    flex-direction: column;
+    gap: 1rem;
+  }
+  
+  .header-title {
+    text-align: center;
   }
   
   .header h1 {

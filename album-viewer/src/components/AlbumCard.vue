@@ -21,24 +21,40 @@
     </div>
     
     <div class="album-actions">
-      <button class="btn btn-primary">Add to Cart</button>
-      <button class="btn btn-secondary">Preview</button>
+      <button 
+        @click="handleAddToCart" 
+        class="btn btn-primary" 
+        :disabled="isInCart(album.id)"
+        :class="{ 'in-cart': isInCart(album.id) }"
+      >
+        {{ isInCart(album.id) ? t('cart.inCart') : t('cart.addToCart') }}
+      </button>
+      <button class="btn btn-secondary">{{ t('preview') }}</button>
     </div>
   </div>
 </template>
 
 <script setup lang="ts">
 import type { Album } from '../types/album'
+import { useCart } from '../composables/useCart'
+import { useI18n } from '../i18n'
 
 interface Props {
   album: Album
 }
 
-defineProps<Props>()
+const props = defineProps<Props>()
+
+const { addToCart, isInCart } = useCart()
+const { t } = useI18n()
 
 const handleImageError = (event: Event): void => {
   const target = event.target as HTMLImageElement
   target.src = 'https://via.placeholder.com/300x300/667eea/white?text=Album+Cover'
+}
+
+const handleAddToCart = (): void => {
+  addToCart(props.album)
 }
 </script>
 
@@ -165,6 +181,19 @@ const handleImageError = (event: Event): void => {
 .btn-primary:hover {
   background: #5a6fd8;
   transform: translateY(-2px);
+}
+
+.btn-primary:disabled,
+.btn-primary.in-cart {
+  background: #95a5f0;
+  cursor: not-allowed;
+  transform: none;
+}
+
+.btn-primary:disabled:hover,
+.btn-primary.in-cart:hover {
+  background: #95a5f0;
+  transform: none;
 }
 
 .btn-secondary {
